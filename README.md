@@ -2,6 +2,10 @@
 
 An intelligent Spring Boot microservice that calculates driving routes between Indian postal codes (pincodes), identifies all toll plazas positioned along the route, computes their exact distance from the origin along the driving path, and delivers cached responses.
 
+> 🚀 **Live Production Deployment:** [https://toll-plaza-production.up.railway.app/](https://toll-plaza-production.up.railway.app/)  
+> 📖 **Live Swagger UI:** [https://toll-plaza-production.up.railway.app/swagger-ui.html](https://toll-plaza-production.up.railway.app/swagger-ui.html)  
+> 📑 **Live OpenAPI Spec:** [https://toll-plaza-production.up.railway.app/v3/api-docs](https://toll-plaza-production.up.railway.app/v3/api-docs)
+
 ---
 
 ## Table of Contents
@@ -176,6 +180,9 @@ The server starts by default on port `8080`. On first run, `TollPlazaInsertServi
 ### Endpoint
 `POST /api/v1/toll-plazas`
 
+- **Production URL:** `https://toll-plaza-production.up.railway.app/api/v1/toll-plazas`
+- **Local URL:** `http://localhost:8080/api/v1/toll-plazas`
+
 ### Request Headers
 - `Content-Type: application/json`
 
@@ -248,8 +255,10 @@ When no toll plazas are within the 500-meter proximity threshold (e.g., intra-ci
 
 ### Swagger UI & OpenAPI 3 Documentation
 Interactive API testing and schema documentation are exposed out-of-the-box:
-- **Swagger UI:** [http://localhost:8080/swagger-ui.html](http://localhost:8080/swagger-ui.html)
-- **OpenAPI v3 JSON Spec:** [http://localhost:8080/v3/api-docs](http://localhost:8080/v3/api-docs)
+- **Production Swagger UI:** [https://toll-plaza-production.up.railway.app/swagger-ui.html](https://toll-plaza-production.up.railway.app/swagger-ui.html)
+- **Production OpenAPI v3 JSON Spec:** [https://toll-plaza-production.up.railway.app/v3/api-docs](https://toll-plaza-production.up.railway.app/v3/api-docs)
+- **Local Swagger UI:** [http://localhost:8080/swagger-ui.html](http://localhost:8080/swagger-ui.html)
+- **Local OpenAPI v3 JSON Spec:** [http://localhost:8080/v3/api-docs](http://localhost:8080/v3/api-docs)
 
 ---
 
@@ -470,10 +479,16 @@ mvn clean test
 
 ## 13. Deployment
 
-The application is packaged as an executable Spring Boot fat JAR, making it compatible with cloud container and PaaS environments such as **Railway**, Render, AWS Elastic Beanstalk, or Docker.
+The application is deployed on **Railway** as an executable Spring Boot fat JAR connected to a cloud Neon PostgreSQL database.
+
+### Live Production Deployment
+- **Base Application URL:** [https://toll-plaza-production.up.railway.app/](https://toll-plaza-production.up.railway.app/)
+- **Live Assessment Endpoint:** `POST https://toll-plaza-production.up.railway.app/api/v1/toll-plazas`
+- **Live Swagger UI:** [https://toll-plaza-production.up.railway.app/swagger-ui.html](https://toll-plaza-production.up.railway.app/swagger-ui.html)
+- **Live OpenAPI Spec:** [https://toll-plaza-production.up.railway.app/v3/api-docs](https://toll-plaza-production.up.railway.app/v3/api-docs)
 
 ### Railway Deployment Workflow:
-1. Connect the GitHub repository `https://github.com/Manishi-nigam/Freight-Fox` to Railway.
+1. Connect the GitHub repository `https://github.com/Manishi-nigam/Toll-Plaza` to Railway.
 2. Railway's buildpack automatically identifies Maven through `pom.xml`, compiles the code (`mvn clean package`), and executes the resulting JAR.
 3. In the Railway dashboard under **Variables**, define the following environment variables:
    - `DB_URL`
