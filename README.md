@@ -246,6 +246,11 @@ When no toll plazas are within the 500-meter proximity threshold (e.g., intra-ci
 }
 ```
 
+### Swagger UI & OpenAPI 3 Documentation
+Interactive API testing and schema documentation are exposed out-of-the-box:
+- **Swagger UI:** [http://localhost:8080/swagger-ui.html](http://localhost:8080/swagger-ui.html)
+- **OpenAPI v3 JSON Spec:** [http://localhost:8080/v3/api-docs](http://localhost:8080/v3/api-docs)
+
 ---
 
 ## 8. Validation and Error Handling

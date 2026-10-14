@@ -198,6 +198,18 @@ class TollPlazaFinderApplicationTests {
     }
 
     @Test
+    void testSwaggerAndOpenApiEndpoints() throws Exception {
+        mockMvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get("/v3/api-docs"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.openapi").exists())
+                .andExpect(jsonPath("$.info.title").value("Freight Fox Toll Plaza Finder API"))
+                .andExpect(jsonPath("$.paths['/api/v1/toll-plazas'].post").exists());
+
+        mockMvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get("/swagger-ui.html"))
+                .andExpect(status().is3xxRedirection());
+    }
+
+    @Test
     void testCachingSuccessReplayAndDistinctKeys() {
         var cache = cacheManager.getCache("route-toll-plazas");
         assertNotNull(cache, "Cache 'route-toll-plazas' must be registered");
