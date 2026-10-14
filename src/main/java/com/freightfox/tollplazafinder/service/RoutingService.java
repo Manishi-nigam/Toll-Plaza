@@ -57,7 +57,7 @@ public class RoutingService {
     }
 
     public double[] geocodePincode(String pincode) {
-        boolean upstreamFailed = false;
+        boolean nominatimUnavailable = false;
 
         try {
             List<Map<String, Object>> response = restClient.get()
@@ -74,9 +74,10 @@ public class RoutingService {
                 return new double[]{lon, lat};
             }
         } catch (RestClientException ex) {
-            upstreamFailed = true;
+            nominatimUnavailable = true;
         }
 
+        boolean zippoUnavailable = false;
         try {
             Map<String, Object> zippoResponse = restClient.get()
                     .uri("https://api.zippopotam.us/in/{pincode}", pincode)
@@ -94,13 +95,13 @@ public class RoutingService {
             }
         } catch (HttpStatusCodeException ex) {
             if (ex.getStatusCode() != HttpStatus.NOT_FOUND) {
-                upstreamFailed = true;
+                zippoUnavailable = true;
             }
         } catch (RestClientException ex) {
-            upstreamFailed = true;
+            zippoUnavailable = true;
         }
 
-        if (upstreamFailed) {
+        if (nominatimUnavailable && zippoUnavailable) {
             throw new ResponseStatusException(HttpStatus.BAD_GATEWAY, "External geocoding service is unavailable.");
         }
 

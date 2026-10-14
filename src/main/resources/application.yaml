@@ -5,9 +5,9 @@ spring:
 
   # Neon PostgreSQL configuration
   datasource:
-    url: jdbc:postgresql://ep-wispy-meadow-b5rmmw89-pooler.c-7.us-east-2.aws.neon.tech/neondb?sslmode=require&channel_binding=require
-    username: neondb_owner
-    password: npg_wQNB1JU3DZMT
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
     driver-class-name: org.postgresql.Driver
     connection-timeout: 30000
     validation-timeout: 5000
@@ -34,6 +34,6 @@ spring:
 
 ors:
   api:
-    key: eyJvcmciOiI1YjNjZTM1OTc4NTExMTAwMDFjZjYyNDgiLCJpZCI6IjVlYzUwZjYxYTVjZDQxNzViYWRiZTdkY2JkN2MyNDY1IiwiaCI6Im11cm11cjY0In0=
+    key: ${ORS_API_KEY}
 
 

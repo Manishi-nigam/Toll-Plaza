@@ -1,7 +1,7 @@
 package com.freightfox.tollplazafinder.service;
 
 import com.freightfox.tollplazafinder.dto.RouteResponse;
-import com.freightfox.tollplazafinder.dto.RouteTollResponse;
+import com.freightfox.tollplazafinder.dto.TollPlazaFinderResponse;
 import com.freightfox.tollplazafinder.entity.TollPlaza;
 import com.freightfox.tollplazafinder.repository.TollPlazaRepository;
 import com.freightfox.tollplazafinder.util.DistanceCalculator;
@@ -23,12 +23,12 @@ public class RouteTollService {
         this.tollPlazaRepository=tollPlazaRepository;
     }
 
-    public List<RouteTollResponse> findTollPlazasAlongRoute() {
+    public TollPlazaFinderResponse findTollPlazasAlongRoute() {
         return findTollPlazasAlongRoute("110001", "226001");
     }
 
     @Cacheable(value = "route-toll-plazas", key = "#sourcePincode + '-' + #destinationPincode")
-    public List<RouteTollResponse> findTollPlazasAlongRoute(String sourcePincode, String destinationPincode) {
+    public TollPlazaFinderResponse findTollPlazasAlongRoute(String sourcePincode, String destinationPincode) {
         double[] startCoords = routingService.geocodePincode(sourcePincode);
         double[] endCoords = routingService.geocodePincode(destinationPincode);
 
@@ -36,14 +36,25 @@ public class RouteTollService {
 
         if (response == null || response.routes() == null || response.routes().isEmpty()
                 || response.routes().get(0).geometry() == null) {
-            return Collections.emptyList();
+            return new TollPlazaFinderResponse(
+                    new TollPlazaFinderResponse.RouteInfo(sourcePincode, destinationPincode, 0.0),
+                    Collections.emptyList()
+            );
+        }
+
+        double routeDistanceKm = 0.0;
+        if (response.routes().get(0).summary() != null) {
+            routeDistanceKm = Math.round((response.routes().get(0).summary().distance() / 1000.0) * 100.0) / 100.0;
         }
 
         String geometry = response.routes().get(0).geometry();
         List<double[]> routeCoordinates = PolyLineDecoder.decode(geometry);
 
         if (routeCoordinates.size() < 2) {
-            return Collections.emptyList();
+            return new TollPlazaFinderResponse(
+                    new TollPlazaFinderResponse.RouteInfo(sourcePincode, destinationPincode, routeDistanceKm),
+                    Collections.emptyList()
+            );
         }
 
         int numSegments = routeCoordinates.size() - 1;
@@ -58,8 +69,12 @@ public class RouteTollService {
             cumulativeDistances[i + 1] = cumulativeDistances[i] + segmentLengths[i];
         }
 
+        if (routeDistanceKm == 0.0 && numSegments > 0) {
+            routeDistanceKm = Math.round((cumulativeDistances[numSegments] / 1000.0) * 100.0) / 100.0;
+        }
+
         List<TollPlaza> allTollPlazas = tollPlazaRepository.findAll();
-        List<RouteTollResponse> results = new ArrayList<>();
+        List<TollPlazaFinderResponse.TollPlazaItem> tollPlazaItems = new ArrayList<>();
         Set<String> seenTollPlazas = new HashSet<>();
 
         double thresholdMeters = 500.0;
@@ -98,20 +113,21 @@ public class RouteTollService {
                         + "|" + tollPlaza.getLongitude();
 
                 if (seenTollPlazas.add(uniqueKey)) {
-                    results.add(new RouteTollResponse(
-                            tollPlaza.getId(),
+                    tollPlazaItems.add(new TollPlazaFinderResponse.TollPlazaItem(
                             tollPlaza.getTollName(),
                             tollPlaza.getLatitude(),
                             tollPlaza.getLongitude(),
-                            tollPlaza.getGeoState(),
                             Math.round((tollDistanceFromSourceMeters / 1000.0) * 100.0) / 100.0
                     ));
                 }
             }
         }
 
-        results.sort(Comparator.comparingDouble(RouteTollResponse::distanceFromSourceKm));
+        tollPlazaItems.sort(Comparator.comparingDouble(TollPlazaFinderResponse.TollPlazaItem::distanceFromSource));
 
-        return results;
+        return new TollPlazaFinderResponse(
+                new TollPlazaFinderResponse.RouteInfo(sourcePincode, destinationPincode, routeDistanceKm),
+                tollPlazaItems
+        );
     }
 }
